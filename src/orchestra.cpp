@@ -20,12 +20,10 @@ void close_shared_memory(char * shrm_name)
     sprintf(buffer,"/%s",shrm_name);
     int fd = shm_unlink(buffer);
     if (fd == -1)
-        /* Handle error */;
-    if (ftruncate(fd, sizeof(struct shrm)) == -1)
-        /* Handle error */;
+        printf("Can not close the shared memory\n");
 }
 
-void spawn_process(char *process_name, char *shrm_name)
+int spawn_process(char *process_name, char *shrm_name)
 {
     pid_t pid;
     char *argv[] = {process_name,shrm_name,NULL};
@@ -34,16 +32,12 @@ void spawn_process(char *process_name, char *shrm_name)
     sprintf(buffer,"./%s",process_name);
     printf("Launch: %s\n", buffer);
     status = posix_spawn(&pid, buffer, NULL, NULL, argv, environ);
-    if (status == 0) {
+    if (status == 0)
         printf("Child pid: %i\n", pid);
-        if (waitpid(pid, &status, 0) != -1) {
-            printf("Child exited with status %i\n", status);
-        } else {
-            perror("waitpid");
-        }
-    } else {
+    else
         printf("posix_spawn: %s\n", strerror(status));
-    }
+
+    return pid;
 }
 
 BasicThread::BasicThread():timer_fd_(-1),running_(0){}

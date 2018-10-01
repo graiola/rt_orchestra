@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <spawn.h>
+#include <semaphore.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/stat.h> /* For mode constants */
@@ -15,20 +16,22 @@
 #include <fcntl.h> /* For O_* constants */
 #include <string.h>
 
-#define PERIOD_MICROSECS_MOTOR 1000 //1millisecs
-#define PERIOD_MICROSECS_CONTROL 10000 //10millisecs
+#define PERIOD_MICROSECS_MOTOR 1000 //1khz
+#define PERIOD_MICROSECS_TASK 4000 //250khz
 #define START_DELAY_SECS 1 //1sec
 
 // TODO, Move to a class with mutexs
 struct shrm {        /* Defines "structure" of shared memory */
-   long long cnt;
+   long long cnt_motor;
+   long long cnt_task;
+   sem_t sync_sem;
 };
 
 int create_shared_memory(char * shrm_name);
 
 void close_shared_memory(char * shrm_name);
 
-void spawn_process(char *process_name, char *shrm_name);
+int spawn_process(char *process_name, char *shrm_name);
 
 class BasicThread
 {
